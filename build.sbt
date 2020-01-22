@@ -23,9 +23,9 @@ import sbtcrossproject.crossProject
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
 ThisBuild / startYear := Some(2017)
+ThisBuild / scalafixDependencies += "org.typelevel" %% "simulacrum-fix" % "0.1.0-SNAPSHOT"
 
 val CompileTime = config("CompileTime").hide
-val SimulacrumVersion = "1.0.0"
 val CatsVersion = "2.1.0"
 val DisciplineScalatestVersion = "1.0.0-RC4"
 
@@ -35,9 +35,10 @@ addCommandAlias("release", ";project root ;reload ;+publish ;sonatypeReleaseAll 
 val commonSettings = Seq(
   scalacOptions ++= PartialFunction
     .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
-      case Some((2, n)) if n >= 13 =>
-        // Necessary for simulacrum
-        Seq("-Ymacro-annotations")
+      case Some((2, n)) if n < 13 =>
+        Seq("-Ypartial-unification")
+      case Some((0, _)) =>
+        Set("-Ykind-projector")
     }
     .toList
     .flatten,
@@ -59,6 +60,10 @@ val commonSettings = Seq(
     Opts.doc.title("cats-effect"),
   scalacOptions in Test += "-Yrangepos",
   scalacOptions in Test ~= (_.filterNot(Set("-Wvalue-discard", "-Ywarn-value-discard"))),
+  libraryDependencies ++= (if (isDotty.value) Nil else Seq(compilerPlugin(scalafixSemanticdb))),
+  scalacOptions ++= (if (isDotty.value) Nil else Seq(s"-P:semanticdb:targetroot:${baseDirectory.value}/.semanticdb", "-Yrangepos")),
+  libraryDependencies += ("org.typelevel" %% "simulacrum-annotation" % "0.1.0-SNAPSHOT")
+    .withDottyCompat(scalaVersion.value),
   // Disable parallel execution in tests; otherwise we cannot test System.err
   parallelExecution in Test := false,
   parallelExecution in IntegrationTest := false,
@@ -136,7 +141,11 @@ val commonSettings = Seq(
       }
     }).transform(node).head
   },
-  addCompilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full)),
+  libraryDependencies ++= (if (isDotty.value) Nil
+                           else
+                             Seq(
+                               compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full))
+                             )),
   mimaFailOnNoPrevious := false
 )
 
@@ -241,10 +250,9 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     name := "cats-effect",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
-      "org.typelevel" %%% "simulacrum" % SimulacrumVersion % CompileTime,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "discipline-scalatest" % DisciplineScalatestVersion % Test
-    ),
+    ).map(_.withDottyCompat(scalaVersion.value)),
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, v)) if v <= 12 =>
