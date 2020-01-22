@@ -329,7 +329,9 @@ object Resource extends ResourceInstances with ResourcePlatform {
    * Lifts an applicative into a resource as a `FunctionK`.  The resource has a no-op release.
    */
   def liftK[F[_]](implicit F: Applicative[F]): F ~> Resource[F, *] =
-    λ[F ~> Resource[F, *]](Resource.liftF(_))
+    new (F ~> Resource[F, *]) {
+      def apply[A](fa: F[A]): Resource[F, A] = Resource.liftF(fa)
+    }
 
   /**
    * Creates a [[Resource]] by wrapping a Java
