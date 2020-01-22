@@ -250,9 +250,25 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     name := "cats-effect",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % CatsVersion,
-      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
-      "org.typelevel" %%% "discipline-scalatest" % DisciplineScalatestVersion % Test
     ).map(_.withDottyCompat(scalaVersion.value)),
+    libraryDependencies ++= (Seq(
+      "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
+      "org.typelevel" %%% "discipline-scalatest" % DisciplineScalatestVersion % Test,
+      "org.scalatestplus" %%% "scalacheck-1-14" % "3.1.0.1" % Test
+    ).map(dep =>
+      if (!isDotty.value) dep
+      else
+        dep
+          .exclude("org.scalatest", "scalatest_2.13")
+          .exclude("org.scalactic", "scalactic_2.13")
+          .withDottyCompat(scalaVersion.value)
+    ) ++
+      (if (isDotty.value)
+         Seq(
+           "org.scalactic" % "scalactic_0.22" % "3.1.1-SNAPSHOT" % Test,
+           "org.scalatest" % "scalatest_0.22" % "3.1.1-SNAPSHOT" % Test
+         )
+       else Nil)),
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, v)) if v <= 12 =>
