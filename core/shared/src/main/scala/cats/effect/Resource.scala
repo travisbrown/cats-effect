@@ -23,6 +23,7 @@ import cats.effect.internals.ResourcePlatform
 import cats.implicits._
 
 import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 /**
  * The `Resource` is a data structure that captures the effectful
