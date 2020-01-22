@@ -27,7 +27,7 @@ ThisBuild / scalafixDependencies += "org.typelevel" %% "simulacrum-fix" % "0.1.0
 
 val CompileTime = config("CompileTime").hide
 val CatsVersion = "2.1.0"
-val DisciplineScalatestVersion = "1.0.0-RC3"
+val DisciplineScalatestVersion = "1.0.0-RC2"
 
 addCommandAlias("ci", ";scalafmtSbtCheck ;scalafmtCheckAll ;test ;mimaReportBinaryIssues; doc")
 addCommandAlias("release", ";project root ;reload ;+publish ;sonatypeReleaseAll ;microsite/publishMicrosite")

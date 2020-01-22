@@ -24,15 +24,9 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatestplus.scalacheck.Checkers
 import org.typelevel.discipline.Laws
-import org.typelevel.discipline.scalatest.FunSuiteDiscipline
+import org.typelevel.discipline.scalatest.Discipline
 
-class BaseTestsSuite
-    extends AnyFunSuite
-    with Matchers
-    with Checkers
-    with FunSuiteDiscipline
-    with TestInstances
-    with TestUtils {
+class BaseTestsSuite extends AnyFunSuite with Matchers with Checkers with Discipline with TestInstances with TestUtils {
   /** For tests that need a usable [[TestContext]] reference. */
   def testAsync[A](name: String, tags: Tag*)(f: TestContext => Unit)(implicit pos: source.Position): Unit =
     // Overriding System.err
