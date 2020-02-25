@@ -27,13 +27,16 @@ ThisBuild / startYear := Some(2017)
 
 val CompileTime = config("CompileTime").hide
 val SimulacrumVersion = "1.0.0"
-val CatsVersion = "2.1.0"
+val CatsVersion = "2.1.1"
 val DisciplineScalatestVersion = "1.0.1"
 val customScalaJSVersion = Option(System.getenv("SCALAJS_VERSION"))
 
 addCommandAlias("ci", ";scalafmtSbtCheck ;scalafmtCheckAll ;test ;mimaReportBinaryIssues; doc")
 
 val commonSettings = Seq(
+  resolvers += (
+    "staging".at("https://oss.sonatype.org/service/local/repositories/orgtypelevel-1587/content/")
+  ),
   scalacOptions ++= PartialFunction
     .condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
       case Some((2, n)) if n >= 13 =>
